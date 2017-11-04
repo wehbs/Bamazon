@@ -6,10 +6,8 @@ var connection = mysql.createConnection({
   host: "localhost",
   port: 3306,
 
-  // Your username
   user: "root",
 
-  // Your password
   password: "",
   database: "bamazon"
 });
@@ -17,17 +15,17 @@ var connection = mysql.createConnection({
 // connect to the mysql server and sql database
 connection.connect(function (err) {
   if (err) throw err;
-  // run the start function after the connection is made to prompt the user
-  // start();
   console.log("connected as id " + connection.threadId);
+  console.log("\n");
   afterConnection();
-  // console.log("Your connected!!");
 });
+
 
 function afterConnection() {
   connection.query("SELECT * FROM products", function (err, res) {
     if (err) throw err;
     for (var i = 0; i < res.length; i++) {
+
       console.log(
         "ID: " +
         res[i].id +
@@ -42,8 +40,8 @@ function afterConnection() {
       );
 
     }
+    console.log("\n");
     placeOrder();
-    // connection.end();
   });
 }
 
@@ -55,43 +53,46 @@ function placeOrder() {
       type: "input",
       message: "Enter the ID of the product you would like to buy: "
     }, {
-      name : "quantity",
+      name: "quantity",
       type: "input",
       message: "How many of this product? "
     }])
     .then(function (answer) {
-      console.log(answer.id);
-      console.log(answer.quantity);
+
+      connection.query("SELECT * FROM products WHERE ?", {
+        id: answer.id
+      }, function (err, res) {
+        if (err) throw err;
+
+        var orderQuantity = answer.quantity;
+        var product = res[0].product_name;
+        var cost = res[0].price;
+        var stock = res[0].stock_quantity;
+
+        if (orderQuantity < stock) {
+          console.log("\n");
+          console.log("You ordered: " + orderQuantity + " of " + product + " at a cost of $" + cost + " each");
+          console.log("Your total cost is $" + cost * orderQuantity);
+          console.log("THANK YOU FOR YOUR BUSINESS! COME BACK SOON.");
+
+          var newStockAmount = stock - orderQuantity;
+          var query = connection.query(
+            "UPDATE products SET ? WHERE ?", [{
+                stock_quantity: newStockAmount
+              },
+              {
+                id: answer.id
+              }
+            ],
+            function (err, res) {
+              console.log(res.affectedRows + " products updated!\n");
+              setTimeout(afterConnection, 2000);
+            }
+          );
+        } else {
+          console.log("There are only " + stock + " in stock, please choose a lesser amount.");
+          placeOrder();
+        }
+      });
     });
-
 };
-
-
-
-
-
-
-
-
-
-
-
-//   // function which prompts the user for what action they should take
-// function start() {
-//     inquirer
-//       .prompt({
-//         name: "postOrBid",
-//         type: "rawlist",
-//         message: "Would you like to [POST] an auction or [BID] on an auction?",
-//         choices: ["POST", "BID"]
-//       })
-//       .then(function(answer) {
-//         // based on their answer, either call the bid or the post functions
-//         if (answer.postOrBid.toUpperCase() === "POST") {
-//           postAuction();
-//         }
-//         else {
-//           bidAuction();
-//         }
-//       });
-//   }
