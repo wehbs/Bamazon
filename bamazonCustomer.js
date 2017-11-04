@@ -20,7 +20,7 @@ connection.connect(function (err) {
   afterConnection();
 });
 
-
+// after connecting to the database list the contents of the database 
 function afterConnection() {
   connection.query("SELECT * FROM products", function (err, res) {
     if (err) throw err;
@@ -45,7 +45,7 @@ function afterConnection() {
   });
 }
 
-
+// contains logic that takes in the order and order amount from the customer and then changes the stock quantity after order. Then is starts the store back up again.
 function placeOrder() {
   inquirer
     .prompt([{
