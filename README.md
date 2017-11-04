@@ -1,3 +1,3 @@
 # Bamazon
 
-<!-- ![ScreenShot](img/animal_hangman.png "Liri") -->
+![ScreenShot](bamazonWorking.gif "Bamazon")
